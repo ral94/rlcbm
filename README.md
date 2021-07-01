@@ -1,2 +1,7 @@
-# rlcbm
-Reinfocement Learning based Condition-oriented Maintenance Scheduling for Flow Line Systems
+# Reinforcement Learning based Condition-oriented Maintenance Scheduling for FLow Line Systems
+
+Reference implementation to the paper
+> **Reinforcement Learning based Condition-oriented Maintenance Scheduling for Flow Line Systems**  
+> *Raphael Lamprecht, Ferdinand Wurst, Marco F. Fuber*  
+> 21th IEEE International Conference on Industrial Informatics (INDIN 2021)
+
