@@ -3,5 +3,5 @@
 Reference implementation to the paper
 > **Reinforcement Learning based Condition-oriented Maintenance Scheduling for Flow Line Systems**  
 > *Raphael Lamprecht, Ferdinand Wurst, Marco F. Fuber*  
-> 21th IEEE International Conference on Industrial Informatics (INDIN 2021)
+> 19th IEEE International Conference on Industrial Informatics (INDIN 2021)
 
