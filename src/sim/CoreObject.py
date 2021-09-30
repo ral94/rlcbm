@@ -5,6 +5,7 @@ class CoreObject():
     '''
     Basic object to use in simulation, provides a simple constructor.
     '''
+
     def __init__(self, id, system):
         self.id = id
         self.system = system

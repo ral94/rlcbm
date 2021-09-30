@@ -8,6 +8,7 @@ class Heuristik(ABC):
     """
     Defines the structure of a heuristik-agent
     """
+
     def __init__(self, env: SimEnv):
         self.env = env
 
@@ -20,7 +21,7 @@ class Heuristik(ABC):
         pass
 
     def schedule(self, epochs):
-        
+
         ep_rewards = [0.0]
 
         # tracking of simulation
@@ -37,12 +38,13 @@ class Heuristik(ABC):
 
                 if done:
                     ep_rewards.append(0.0)
-                    produced_parts.append(len(self.env.system.sink_store.items))
+                    produced_parts.append(
+                        len(self.env.system.sink_store.items))
                     ep_rewards_mean.append(self._get_mean_reward(ep_rewards))
 
                     print('epoch:', epoch)
                     break
-        
+
         return ep_rewards, produced_parts, ep_rewards_mean
 
     def _get_mean_reward(self, ep_rewards):
@@ -57,8 +59,8 @@ class RandomAgent(Heuristik):
     """
     Selects actions according to a Random logic
     """
-    
-    def __init__(self, env:SimEnv):
+
+    def __init__(self, env: SimEnv):
         super().__init__(env)
 
     def _get_action(self):
@@ -70,28 +72,28 @@ class FIFOAgent(Heuristik):
     """
     Selects actions according to a FIF0 logic
     """
-    
-    def __init__(self, env:SimEnv):
+
+    def __init__(self, env: SimEnv):
         super().__init__(env)
         self.actions = list(range(self.env.action_space.n))
 
     def _get_action(self):
         # if there is a maintenance resource available and at least one machine requested maintenance
         if self.env.system.available_maintenance > 0 and len(self.env.system.machines_to_repair) > 0:
-             # assign as many maintenance resources as possibly
-                for i in range(self.env.system.available_maintenance):
-                    # check for machines still being available
-                    if len(self.env.system.machines_to_repair) > 0:
-                        # FIFO -> take first machine that requested repair
-                        machine = self.env.system.machines_to_repair[0]
+            # assign as many maintenance resources as possibly
+            for i in range(self.env.system.available_maintenance):
+                # check for machines still being available
+                if len(self.env.system.machines_to_repair) > 0:
+                    # FIFO -> take first machine that requested repair
+                    machine = self.env.system.machines_to_repair[0]
 
-                        # remove the machine from the list of machines that requested maintenance
-                        self.env.system.machines_to_repair.remove(machine)
-                        self.env.logger.debug('Repairing machine {} with health {} due to FIFO maintenance logic. Machines waiting for repair: {}'.format(machine.id, machine.health,
-                             self.env.system.machines_to_repair), extra = {'simtime': self.env.system.sim_env.now})
-                    
-                    # choose action
-                    return self.env.system.machines.index(machine)
+                    # remove the machine from the list of machines that requested maintenance
+                    self.env.system.machines_to_repair.remove(machine)
+                    self.env.logger.debug('Repairing machine {} with health {} due to FIFO maintenance logic. Machines waiting for repair: {}'.format(machine.id, machine.health,
+                                                                                                                                                      self.env.system.machines_to_repair), extra={'simtime': self.env.system.sim_env.now})
+
+                # choose action
+                return self.env.system.machines.index(machine)
 
         else:
             # choose idle action

@@ -17,20 +17,20 @@ class SimEnv(gym.Env, ABC):
 
         self.system = system
         self.logger = logging.getLogger("factory_sim")
-        
+
         self.sim_counter = 1
         self.done = False
         self.previous_reward = 0
 
     @classmethod
     @abstractmethod
-    def step (self, action: object) -> Tuple[object, float, bool, dict]:  
+    def step(self, action: object) -> Tuple[object, float, bool, dict]:
         """
         Gym interface method: step
         Takes action and executes simulation until next action is needed
         :param action: int, represents maintenance machine n; n+1: do nothing
         """
-        pass  
+        pass
 
     @classmethod
     @abstractmethod
@@ -40,15 +40,15 @@ class SimEnv(gym.Env, ABC):
         Initializes the environment and runs until the first decision point 
         is reached.
         :return initial_observation: np.array, initial state space
-        """ 
+        """
         pass
- 
+
     @classmethod
     @abstractmethod
     def next_sim_step(self):
         """ Performs a simulation until next decision point is reached """
         pass
-    
+
     @classmethod
     @abstractmethod
     def execute_action(self, action):
@@ -93,36 +93,45 @@ class SimEnv(gym.Env, ABC):
                 for machine_type in self.system.production_system.machine_types:
                     if task in self.system.production_system.machine_types[machine_type]['tasks']:
                         if duration_task > self.system.production_system.machine_types[machine_type]['tasks'][task]:
-                            duration_task = self.system.production_system.machine_types[machine_type]['tasks'][task]
+                            duration_task = self.system.production_system.machine_types[
+                                machine_type]['tasks'][task]
                 min_process_times.append(duration_task)
-                assert (duration_task < float('inf')), 'Found a product in the simulation that can not be produced with the given machines.'
+                assert (duration_task < float(
+                    'inf')), 'Found a product in the simulation that can not be produced with the given machines.'
             longest_task[product_type] = max(min_process_times)
         return longest_task
 
     def _log_summary(self):
         """ Log final summary """
-        
+
         # adapt simulation time regarding weekends
         if self.system.weekend_on:
-            weekends_per_simulation = int(self.system.simulation_time / self.system.weekly_schedule.steps_per_week)
-            active_simulation_time = self.system.simulation_time - (weekends_per_simulation * self.system.weekly_schedule.steps_per_weekend)
+            weekends_per_simulation = int(
+                self.system.simulation_time / self.system.weekly_schedule.steps_per_week)
+            active_simulation_time = self.system.simulation_time - \
+                (weekends_per_simulation *
+                 self.system.weekly_schedule.steps_per_weekend)
         else:
             active_simulation_time = self.system.simulation_time
-           
+
         # Parts produced depend on the amount of products in sink_store
         parts_produced, max_parts_possible, production_rate, lost_parts = {}, {}, {}, {}
         longest_task = self._get_bottleneck()
-        self.logger.debug('Here are the longest process durations: {}'.format(longest_task), extra={'simtime': self.system.sim_env.now})
+        self.logger.debug('Here are the longest process durations: {}'.format(
+            longest_task), extra={'simtime': self.system.sim_env.now})
         # count all produced products
         for product_type in self.system.production_system.product_types:
             parts_produced[product_type] = 0
             for product in self.system.sink_store.items:
-                    if product.product_type == product_type:
-                        parts_produced[product_type] += 1
-            max_parts_possible[product_type] = math.floor(active_simulation_time/longest_task[product_type])
-            production_rate[product_type] =  round(100*(parts_produced[product_type]/max_parts_possible[product_type]))
-            lost_parts[product_type] = max_parts_possible[product_type] - parts_produced[product_type]
-        
+                if product.product_type == product_type:
+                    parts_produced[product_type] += 1
+            max_parts_possible[product_type] = math.floor(
+                active_simulation_time/longest_task[product_type])
+            production_rate[product_type] = round(
+                100*(parts_produced[product_type]/max_parts_possible[product_type]))
+            lost_parts[product_type] = max_parts_possible[product_type] - \
+                parts_produced[product_type]
+
         if self.reward_function.reward_cases is not None:
             msg = "\n\
             Total Reward: {reward}\n\
@@ -131,10 +140,10 @@ class SimEnv(gym.Env, ABC):
             reward/cost cases: {cc}"\
                         .format(reward=self.reward_function.reward, ppt=parts_produced, mppt=max_parts_possible,
                                 pr=production_rate,
-                                lp = lost_parts,
-                                cc = self.reward_function.reward_cases)
-    
-            self.logger.info(msg ,extra = {"simtime": self.system.sim_env.now})
+                                lp=lost_parts,
+                                cc=self.reward_function.reward_cases)
+
+            self.logger.info(msg, extra={"simtime": self.system.sim_env.now})
         else:
             msg = "\n\
             Total Reward: {reward}\n\
@@ -142,7 +151,6 @@ class SimEnv(gym.Env, ABC):
             Lost Parts: {lp}"\
                         .format(reward=self.reward_function.reward, ppt=parts_produced, mppt=max_parts_possible,
                                 pr=production_rate,
-                                lp = lost_parts)
-    
-            self.logger.info(msg ,extra = {"simtime": self.system.sim_env.now})
+                                lp=lost_parts)
 
+            self.logger.info(msg, extra={"simtime": self.system.sim_env.now})
